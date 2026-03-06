@@ -2,29 +2,20 @@
 
 A full-stack serverless web application built on AWS that helps tribal communities file forest land rights claims under the **Forest Rights Act (FRA) 2006** across 5 states in India.
 
-> Originally built as a Hackathon project — later deployed and scaled on AWS with a complete serverless backend.
+> Originally built as a Hackathon project and later deployed on AWS with a complete serverless backend.
 
 ---
 
 ## 🌐 Live Demo
 
-> Hosted on AWS S3 + CloudFront  
-> `https://d1fbs2mbosqkr1.cloudfront.net`
+> Hosted on AWS with a serverless backend.
 
----
 
-## 📸 Screenshots
 
-| Dashboard | Interactive Map | Submit Claims |
-|---|---|---|
-| ![Dashboard](screenshots/dashboard.png) | ![Map](screenshots/map.png) | ![Claims](screenshots/claims.png) |
-
----
-
-## ☁️ AWS Architecture
+## AWS Architecture
 
 ```
-User → CloudFront (CDN + HTTPS)
+User → AWS edge delivery (HTTPS)
            ↓
         S3 Bucket (Static Website)
            ↓
@@ -40,7 +31,7 @@ User → CloudFront (CDN + HTTPS)
 | Service | Purpose |
 |---|---|
 | **Amazon S3** | Hosts all static files (HTML, CSS, JS) |
-| **AWS CloudFront** | CDN — serves website globally with HTTPS |
+| **AWS edge delivery** | Serves the website globally with HTTPS |
 | **AWS Lambda** | Serverless Python function — processes claim submissions |
 | **Amazon API Gateway** | Public HTTPS endpoint connecting frontend to Lambda |
 | **Amazon DynamoDB** | NoSQL database storing all claim records |
@@ -55,7 +46,7 @@ User → CloudFront (CDN + HTTPS)
 - 📋 **Submit Claims** — Full claim form with real-time validation, drag & drop file upload, live summary sidebar
 - 📈 **Reports** — Searchable/filterable claims table, donut chart, bar chart analytics
 - ⚙️ **Settings** — Profile, notifications, security, appearance settings
-- 🔒 **HTTPS** — Secured via CloudFront SSL certificate
+- 🔒 **HTTPS** — Secured with an SSL certificate
 - ✅ **Serverless Backend** — Form submissions saved to DynamoDB in real-time
 
 ---
@@ -76,7 +67,7 @@ User → CloudFront (CDN + HTTPS)
 
 **Infrastructure**
 - Amazon S3 (Static Hosting)
-- AWS CloudFront (CDN)
+- AWS edge delivery (HTTPS)
 - AWS IAM (Access Control)
 
 ---
@@ -140,13 +131,13 @@ def lambda_handler(event, context):
 ## 🧠 What I Learned
 
 - Hosting static websites on **Amazon S3** and configuring bucket policies
-- Setting up **CloudFront** distributions for CDN + HTTPS
+- Setting up global HTTPS delivery for static files
 - Writing **serverless functions** with AWS Lambda in Python
 - Creating **REST APIs** with Amazon API Gateway
 - Storing and querying data in **DynamoDB** (NoSQL)
 - Configuring **IAM roles** and least privilege permissions
 - Understanding and fixing **CORS** issues between frontend and API
-- **Invalidating CloudFront cache** after deployments
+- Managing cached static files after deployments
 - End-to-end **serverless architecture** on AWS
 
 ---
@@ -158,7 +149,7 @@ Entire project runs on **AWS Free Tier — $0/month**
 | Service | Free Tier |
 |---|---|
 | S3 | 5GB storage, 20K requests/month |
-| CloudFront | 1TB transfer, 10M requests/month |
+| Static delivery | 1TB transfer, 10M requests/month |
 | Lambda | 1M requests/month |
 | API Gateway | 1M requests/month |
 | DynamoDB | 25GB storage forever |
@@ -171,14 +162,6 @@ Entire project runs on **AWS Free Tier — $0/month**
 - [ ] **Amazon Cognito** — User authentication & login
 - [ ] **S3 File Upload** — Store actual claim documents
 - [ ] **Custom Domain** — Route 53 + custom domain name
-
----
-
-## 👨‍💻 Author
-
-**Saransh**  
-Cloud Computing Enthusiast · 15 days into AWS  
-Building real projects to learn cloud from scratch
 
 ---
 
