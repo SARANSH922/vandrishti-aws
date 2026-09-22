@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VanDrishti — Reports</title>
+  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .filter-bar .form-select { width: auto; min-width: 160px; }
+    .filter-bar .form-input { width: auto; min-width: 200px; }
+    .filter-bar-spacer { flex: 1; }
+
+    .reports-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 24px; }
+
+    .donut-wrap {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .donut-svg { flex-shrink: 0; }
+    .donut-legend { display: flex; flex-direction: column; gap: 10px; }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary); }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .legend-val { margin-left: auto; font-weight: 700; color: var(--text-primary); font-size: 14px; padding-left: 16px; }
+
+    .bar-chart { display: flex; align-items: flex-end; gap: 12px; height: 120px; padding-top: 10px; }
+    .bar-col { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; }
+    .bar-fill { width: 100%; background: linear-gradient(180deg, var(--green-primary), var(--green-dim)); border-radius: 4px 4px 0 0; transition: height 0.8s ease; min-width: 24px; }
+    .bar-label { font-size: 10px; color: var(--text-muted); text-align: center; }
+    .bar-val { font-size: 11px; font-weight: 700; color: var(--green-primary); }
+
+    .search-box {
+      position: relative;
+    }
+    .search-box i {
+      position: absolute;
+      left: 12px; top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    .search-box input { padding-left: 36px; }
+
+    .table-actions { display: flex; gap: 8px; }
+    .tbl-btn {
+      width: 28px; height: 28px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 11px;
+      transition: all 0.2s;
+    }
+    .tbl-btn:hover { border-color: var(--border-active); color: var(--green-primary); }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .pagination-info { font-size: 12px; color: var(--text-muted); }
+    .pagination-btns { display: flex; gap: 6px; }
+    .pg-btn {
+      width: 30px; height: 30px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .pg-btn.active { background: var(--green-primary); color: #0a0f0a; border-color: var(--green-primary); font-weight: 700; }
+    .pg-btn:hover:not(.active) { border-color: var(--border-active); color: var(--green-primary); }
+  </style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🌿</div>
+    <span class="logo-text">Van<span>Drishti</span></span>
+  </div>
+  <div class="sidebar-menu">
+    <div class="nav-section-label">Main</div>
+    <ul class="nav-links">
+      <li><a href="dashboard.html"><i class="fas fa-th-large"></i> Dashboard</a></li>
+      <li><a href="map2.html"><i class="fas fa-map-marked-alt"></i> Interactive Map</a></li>
+      <li><a href="claims.html"><i class="fas fa-file-upload"></i> Submit Claims</a></li>
+      <li><a href="reports.html" class="active"><i class="fas fa-chart-bar"></i> Reports</a></li>
+    </ul>
+    <div class="nav-section-label" style="margin-top:16px;">System</div>
+    <ul class="nav-links">
+      <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+    </ul>
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar">S</div>
+      <div class="user-info">
+        <div class="user-name">Saransh</div>
+        <div class="user-role">Field Officer</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="main-wrapper">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="page-title">Reports & Analytics</span>
+      <span class="page-subtitle">Overview of all claims across states</span>
+    </div>
+    <div class="topbar-right">
+      <div class="status-badge"><div class="status-dot"></div> System Online</div>
+      <button class="btn btn-primary" style="height:36px;padding:0 14px;font-size:12px;"><i class="fas fa-download"></i> Export CSV</button>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <!-- Top stats -->
+    <div class="reports-stats">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+        <div class="stat-value">1,284</div>
+        <div class="stat-label">Total Claims</div>
+        <span class="stat-change up"><i class="fas fa-arrow-up"></i> 12% vs last month</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-value">66%</div>
+        <div class="stat-label">Approval Rate</div>
+        <span class="stat-change up"><i class="fas fa-arrow-up"></i> 3% improvement</span>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-hourglass-half"></i></div>
+        <div class="stat-value">14d</div>
+        <div class="stat-label">Avg Processing Time</div>
+        <span class="stat-change down"><i class="fas fa-arrow-down"></i> 2 days faster</span>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="content-grid" style="margin-bottom:24px;">
+
+      <!-- Donut chart -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">Claims by Status</span></div>
+        <div class="donut-wrap">
+          <svg class="donut-svg" width="120" height="120" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="46" fill="none" stroke="#1a261a" stroke-width="16"/>
+            <!-- Approved 66% -->
+            <circle cx="60" cy="60" r="46" fill="none" stroke="#22c55e" stroke-width="16"
+              stroke-dasharray="289" stroke-dashoffset="0" stroke-linecap="round"
+              transform="rotate(-90 60 60)" style="stroke-dasharray: 189 300;"/>
+            <!-- Pending 24% -->
+            <circle cx="60" cy="60" r="46" fill="none" stroke="#fbbf24" stroke-width="16"
+              stroke-dasharray="289" stroke-dashoffset="0" stroke-linecap="round"
+              transform="rotate(-90 60 60)" style="stroke-dasharray: 69 300; stroke-dashoffset: -191;"/>
+            <!-- Rejected 10% -->
+            <circle cx="60" cy="60" r="46" fill="none" stroke="#f87171" stroke-width="16"
+              stroke-linecap="round"
+              transform="rotate(-90 60 60)" style="stroke-dasharray: 29 300; stroke-dashoffset: -262;"/>
+            <text x="60" y="55" text-anchor="middle" fill="#f0fdf0" font-size="18" font-weight="800" font-family="Syne">1,284</text>
+            <text x="60" y="70" text-anchor="middle" fill="#4b7a54" font-size="9">total</text>
+          </svg>
+          <div class="donut-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#22c55e;"></div>Approved <span class="legend-val">847</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:#fbbf24;"></div>Pending <span class="legend-val">312</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:#f87171;"></div>Rejected <span class="legend-val">125</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bar chart -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">Claims by State</span></div>
+        <div class="bar-chart">
+          <div class="bar-col"><div class="bar-val">384</div><div class="bar-fill" style="height:90px;"></div><div class="bar-label">Odisha</div></div>
+          <div class="bar-col"><div class="bar-val">291</div><div class="bar-fill" style="height:68px;"></div><div class="bar-label">Jharkhand</div></div>
+          <div class="bar-col"><div class="bar-val">312</div><div class="bar-fill" style="height:74px;"></div><div class="bar-label">Telangana</div></div>
+          <div class="bar-col"><div class="bar-val">198</div><div class="bar-fill" style="height:47px;"></div><div class="bar-label">M.P.</div></div>
+          <div class="bar-col"><div class="bar-val">99</div><div class="bar-fill" style="height:24px;"></div><div class="bar-label">Tripura</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter + Table -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">All Claims</span>
+        <div style="display:flex;gap:8px;">
+          <div class="table-actions">
+            <div class="tbl-btn"><i class="fas fa-filter"></i></div>
+            <div class="tbl-btn"><i class="fas fa-download"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" class="form-input" placeholder="Search applicant, village..." id="searchInput" oninput="filterTable()">
+        </div>
+        <select class="form-select" id="stateFilter" onchange="filterTable()">
+          <option value="">All States</option>
+          <option>Odisha</option>
+          <option>Jharkhand</option>
+          <option>Telangana</option>
+          <option>Madhya Pradesh</option>
+          <option>Tripura</option>
+        </select>
+        <select class="form-select" id="statusFilter" onchange="filterTable()">
+          <option value="">All Statuses</option>
+          <option>Approved</option>
+          <option>Pending</option>
+          <option>Rejected</option>
+        </select>
+        <div class="filter-bar-spacer"></div>
+        <button class="btn btn-ghost" style="height:40px;font-size:12px;" onclick="clearFilters()"><i class="fas fa-times"></i> Clear</button>
+      </div>
+
+      <div class="table-wrap">
+        <table id="claimsTable">
+          <thead>
+            <tr>
+              <th>Claim ID</th>
+              <th>Applicant</th>
+              <th>State</th>
+              <th>Village</th>
+              <th>Area (ha)</th>
+              <th>Land Type</th>
+              <th>Date Filed</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination">
+        <div class="pagination-info" id="paginationInfo">Showing 1–10 of 20</div>
+        <div class="pagination-btns">
+          <div class="pg-btn"><i class="fas fa-chevron-left"></i></div>
+          <div class="pg-btn active">1</div>
+          <div class="pg-btn">2</div>
+          <div class="pg-btn"><i class="fas fa-chevron-right"></i></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const claims = [
+  { id: '#VD-1001', name: 'Ramesh Kumar', state: 'Odisha', village: 'Bhubaneswar', area: 2.4, type: 'Forest Land', date: '2026-03-10', status: 'Approved' },
+  { id: '#VD-1002', name: 'Sunita Devi', state: 'Jharkhand', village: 'Ranchi Block', area: 1.8, type: 'Cultivation', date: '2026-03-11', status: 'Pending' },
+  { id: '#VD-1003', name: 'Mohan Tribal', state: 'Telangana', village: 'Warangal North', area: 3.1, type: 'Forest Land', date: '2026-03-12', status: 'Pending' },
+  { id: '#VD-1004', name: 'Priya Oraon', state: 'Madhya Pradesh', village: 'Bhopal Rural', area: 0.9, type: 'Habitation', date: '2026-03-12', status: 'Approved' },
+  { id: '#VD-1005', name: 'Birsa Munda', state: 'Jharkhand', village: 'Jamshedpur West', area: 4.2, type: 'Forest Land', date: '2026-03-13', status: 'Rejected' },
+  { id: '#VD-1006', name: 'Kavita Singh', state: 'Odisha', village: 'Cuttack', area: 1.5, type: 'Cultivation', date: '2026-03-13', status: 'Approved' },
+  { id: '#VD-1007', name: 'Raju Gond', state: 'Telangana', village: 'Hyderabad Outer', area: 2.8, type: 'Community Forest', date: '2026-03-14', status: 'Approved' },
+  { id: '#VD-1008', name: 'Mamta Tripuri', state: 'Tripura', village: 'Agartala East', area: 1.1, type: 'Forest Land', date: '2026-03-14', status: 'Pending' },
+  { id: '#VD-1009', name: 'Suresh Oraon', state: 'Jharkhand', village: 'Ranchi South', area: 3.6, type: 'Cultivation', date: '2026-03-15', status: 'Approved' },
+  { id: '#VD-1010', name: 'Lalita Minj', state: 'Odisha', village: 'Bhubaneswar Outer', area: 0.7, type: 'Habitation', date: '2026-03-15', status: 'Pending' },
+  { id: '#VD-1011', name: 'Dinesh Bhil', state: 'Madhya Pradesh', village: 'Indore Rural', area: 2.2, type: 'Forest Land', date: '2026-03-16', status: 'Approved' },
+  { id: '#VD-1012', name: 'Anita Korku', state: 'Madhya Pradesh', village: 'Bhopal Block', area: 1.9, type: 'Cultivation', date: '2026-03-16', status: 'Rejected' },
+];
+
+function statusBadge(s) {
+  const map = { Approved: 'badge-green', Pending: 'badge-yellow', Rejected: 'badge-red' };
+  return `<span class="badge ${map[s]}">${s}</span>`;
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = data.map(c => `
+    <tr>
+      <td style="font-family:'Syne',sans-serif;font-weight:700;color:var(--green-primary);">${c.id}</td>
+      <td style="font-weight:500;color:var(--text-primary);">${c.name}</td>
+      <td>${c.state}</td>
+      <td>${c.village}</td>
+      <td>${c.area}</td>
+      <td><span class="badge badge-blue">${c.type}</span></td>
+      <td>${c.date}</td>
+      <td>${statusBadge(c.status)}</td>
+    </tr>
+  `).join('');
+  document.getElementById('paginationInfo').textContent = `Showing 1–${data.length} of ${data.length}`;
+}
+
+function filterTable() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const state = document.getElementById('stateFilter').value;
+  const status = document.getElementById('statusFilter').value;
+  const filtered = claims.filter(c =>
+    (!search || c.name.toLowerCase().includes(search) || c.village.toLowerCase().includes(search)) &&
+    (!state || c.state === state) &&
+    (!status || c.status === status)
+  );
+  renderTable(filtered);
+}
+
+function clearFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('stateFilter').value = '';
+  document.getElementById('statusFilter').value = '';
+  renderTable(claims);
+}
+
+renderTable(claims);
+</script>
+</body>
+</html>

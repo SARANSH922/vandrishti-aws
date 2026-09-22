@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VanDrishti — Submit Claim</title>
+  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .claims-layout { display: grid; grid-template-columns: 1fr 340px; gap: 24px; }
+
+    .steps-bar {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 28px;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+    }
+    .step-num {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      transition: all 0.3s;
+    }
+    .step.active .step-num { background: var(--green-primary); border-color: var(--green-primary); color: #0a0f0a; box-shadow: 0 0 12px var(--green-glow-strong); }
+    .step.done .step-num { background: var(--green-dim); border-color: var(--green-dim); color: white; }
+    .step-label { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+    .step.active .step-label { color: var(--green-primary); }
+    .step.done .step-label { color: var(--text-secondary); }
+    .step-line { flex: 1; height: 1px; background: var(--border); margin: 0 12px; }
+    .step-line.done { background: var(--green-dim); }x
+
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 40px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: var(--green-primary);
+      background: var(--green-glow);
+    }
+    .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+    .upload-icon-big {
+      width: 56px; height: 56px;
+      background: var(--green-glow);
+      border: 1px solid var(--border-active);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      color: var(--green-primary);
+      margin: 0 auto 14px;
+    }
+    .upload-title { font-size: 15px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
+    .upload-sub { font-size: 12px; color: var(--text-muted); } 
+    .upload-types { display: flex; gap: 8px; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+    .upload-type-badge {
+      padding: 3px 8px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    .file-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+    }
+    .file-item i { color: var(--green-primary); }
+    .file-name { font-size: 13px; color: var(--text-secondary); flex: 1; }
+    .file-size { font-size: 11px; color: var(--text-muted); }
+    .file-remove { color: var(--text-muted); cursor: pointer; font-size: 12px; }
+    .file-remove:hover { color: #f87171; }
+
+    .summary-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      position: sticky;
+      top: calc(var(--header-height) + 20px);
+    }
+    .summary-title { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px; }
+    .summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(34,197,94,0.05); }
+    .summary-row:last-of-type { border-bottom: none; }
+    .summary-key { font-size: 12px; color: var(--text-muted); }
+    .summary-val { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+
+    .tip-box {
+      background: var(--green-glow);
+      border: 1px solid var(--border-active);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      margin-top: 16px;
+    }
+    .tip-box-title { font-size: 12px; font-weight: 700; color: var(--green-primary); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+    .tip-box ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .tip-box ul li { font-size: 12px; color: var(--text-muted); display: flex; align-items: flex-start; gap: 6px; }
+    .tip-box ul li::before { content: '→'; color: var(--green-primary); flex-shrink: 0; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .section-divider { display: flex; align-items: center; gap: 12px; margin: 24px 0 20px; }
+    .section-divider-line { flex: 1; height: 1px; background: var(--border); }
+    .section-divider-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted); white-space: nowrap; }
+
+    .form-actions { display: flex; align-items: center; justify-content: space-between; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border); }
+
+    .toast {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--green-primary);
+      border-radius: var(--radius);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--text-primary);
+      box-shadow: 0 0 32px var(--green-glow-strong);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 9999;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast i { color: var(--green-primary); font-size: 16px; }
+  </style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🌿</div>
+    <span class="logo-text">Van<span>Drishti</span></span>
+  </div>
+  <div class="sidebar-menu">
+    <div class="nav-section-label">Main</div>
+    <ul class="nav-links">
+      <li><a href="dashboard.html"><i class="fas fa-th-large"></i> Dashboard</a></li>
+      <li><a href="map2.html"><i class="fas fa-map-marked-alt"></i> Interactive Map</a></li>
+      <li><a href="claims.html" class="active"><i class="fas fa-file-upload"></i> Submit Claims</a></li>
+      <li><a href="reports.html"><i class="fas fa-chart-bar"></i> Reports</a></li>
+    </ul>
+    <div class="nav-section-label" style="margin-top:16px;">System</div>
+    <ul class="nav-links">
+      <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+    </ul>
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar">S</div>
+      <div class="user-info">
+        <div class="user-name">Saransh</div>
+        <div class="user-role">Field Officer</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="main-wrapper">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="page-title">Submit New Claim</span>
+      <span class="page-subtitle">File a forest land rights claim under FRA 2006</span>
+    </div>
+    <div class="topbar-right">
+      <div class="status-badge"><div class="status-dot"></div> System Online</div>
+      <div class="topbar-btn"><i class="fas fa-bell"></i><div class="notif-dot"></div></div>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <!-- Steps -->
+    <div class="steps-bar">
+      <div class="step active">
+        <div class="step-num">1</div>
+        <div class="step-label">Applicant Info</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-label">Land Details</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-label">Documents</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-label">Review & Submit</div>
+      </div>
+    </div>
+
+    <div class="claims-layout">
+
+      <!-- Main Form -->
+      <div>
+        <form id="claimForm">
+
+          <!-- Applicant Info -->
+          <div class="card" style="margin-bottom:20px;">
+            <div class="card-header"><span class="card-title"><i class="fas fa-user" style="color:var(--green-primary);margin-right:8px;"></i>Applicant Information</span></div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" class="form-input" placeholder="Enter applicant's full name" id="appName" oninput="updateSummary()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Aadhaar Number</label>
+                <input type="text" class="form-input" placeholder="XXXX-XXXX-XXXX">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Community / Tribe</label>
+                <input type="text" class="form-input" placeholder="e.g., Santali, Gondi, Oraon">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Contact Number</label>
+                <input type="tel" class="form-input" placeholder="+91 XXXXX XXXXX">
+              </div>
+            </div>
+          </div>
+
+          <!-- Land Details -->
+          <div class="card" style="margin-bottom:20px;">
+            <div class="card-header"><span class="card-title"><i class="fas fa-map-pin" style="color:var(--green-primary);margin-right:8px;"></i>Land Details</span></div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">State</label>
+                <select class="form-select" id="stateField" onchange="updateSummary()">
+                  <option value="">Select State</option>
+                  <option>Odisha</option>
+                  <option>Jharkhand</option>
+                  <option>Telangana</option>
+                  <option>Madhya Pradesh</option>
+                  <option>Tripura</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Village Name</label>
+                <input type="text" class="form-input" placeholder="Enter village name" id="villageField" oninput="updateSummary()">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Survey Number</label>
+                <input type="text" class="form-input" placeholder="e.g., 123/4A" id="surveyField" oninput="updateSummary()">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Area (Hectares)</label>
+                <input type="number" step="0.01" class="form-input" placeholder="e.g., 2.5" id="areaField" oninput="updateSummary()">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Land Type</label>
+                <select class="form-select">
+                  <option value="">Select Land Type</option>
+                  <option>Forest Land</option>
+                  <option>Cultivation Land</option>
+                  <option>Habitation Land</option>
+                  <option>Community Forest Resource</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Claim Date</label>
+                <input type="date" class="form-input">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Additional Notes</label>
+              <textarea class="form-textarea" placeholder="Any additional information about the land or claim..."></textarea>
+            </div>
+          </div>
+
+          <!-- Document Upload -->
+          <div class="card" style="margin-bottom:20px;">
+            <div class="card-header"><span class="card-title"><i class="fas fa-paperclip" style="color:var(--green-primary);margin-right:8px;"></i>Upload Documents</span></div>
+
+            <div class="upload-zone" id="uploadZone">
+              <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" id="fileInput" onchange="handleFiles(this.files)">
+              <div class="upload-icon-big"><i class="fas fa-cloud-upload-alt"></i></div>
+              <div class="upload-title">Drag & drop files here</div>
+              <div class="upload-sub">or click to browse your files</div>
+              <div class="upload-types">
+                <span class="upload-type-badge">PDF</span>
+                <span class="upload-type-badge">JPG</span>
+                <span class="upload-type-badge">PNG</span>
+                <span class="upload-type-badge">DOC</span>
+                <span class="upload-type-badge">Max 10MB</span>
+              </div>
+            </div>
+            <div class="file-list" id="fileList"></div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" onclick="saveDraft()"><i class="fas fa-save"></i> Save Draft</button>
+            <div style="display:flex;gap:10px;">
+              <button type="reset" class="btn btn-secondary" ><i class="fas fa-undo"></i> Clear</button>
+              <button type="button" class="btn btn-primary" onclick="submitClaim()"><i class="fas fa-paper-plane"></i> Submit Claim</button>
+            </div>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- Summary Sidebar -->
+      <div>
+        <div class="summary-card">
+          <div class="summary-title">📋 Claim Summary</div>
+          <div class="summary-row"><span class="summary-key">Applicant</span><span class="summary-val" id="sum-name">—</span></div>
+          <div class="summary-row"><span class="summary-key">State</span><span class="summary-val" id="sum-state">—</span></div>
+          <div class="summary-row"><span class="summary-key">Village</span><span class="summary-val" id="sum-village">—</span></div>
+          <div class="summary-row"><span class="summary-key">Survey No.</span><span class="summary-val" id="sum-survey">—</span></div>
+          <div class="summary-row"><span class="summary-key">Area</span><span class="summary-val" id="sum-area">—</span></div>
+          <div class="summary-row"><span class="summary-key">Documents</span><span class="summary-val" id="sum-docs">0 files</span></div>
+          <div class="summary-row"><span class="summary-key">Status</span><span class="summary-val"><span class="badge badge-yellow">Draft</span></span></div>
+
+          <div class="tip-box">
+            <div class="tip-box-title"><i class="fas fa-lightbulb"></i> Required Documents</div>
+            <ul>
+              <li>Aadhaar / Identity proof</li>
+              <li>Land survey map or sketch</li>
+              <li>Gram Sabha resolution</li>
+              <li>Proof of occupation (photos)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <i class="fas fa-check-circle"></i>
+  <span id="toast-msg">Claim submitted successfully!</span>
+</div>
+
+<script>
+  function updateSummary() {
+    const name = document.getElementById('appName').value || '—';
+    const state = document.getElementById('stateField').value || '—';
+    const village = document.getElementById('villageField').value || '—';
+    const survey = document.getElementById('surveyField').value || '—';
+    const area = document.getElementById('areaField').value ? document.getElementById('areaField').value + ' ha' : '—';
+    document.getElementById('sum-name').textContent = name;
+    document.getElementById('sum-state').textContent = state;
+    document.getElementById('sum-village').textContent = village;
+    document.getElementById('sum-survey').textContent = survey;
+    document.getElementById('sum-area').textContent = area;
+  }
+
+  function handleFiles(files) {
+    const list = document.getElementById('fileList');
+    const count = files.length;
+    list.innerHTML = '';
+    Array.from(files).forEach(file => {
+      const size = (file.size / 1024).toFixed(1) + ' KB';
+      list.innerHTML += `<div class="file-item"><i class="fas fa-file-alt"></i><span class="file-name">${file.name}</span><span class="file-size">${size}</span><i class="fas fa-times file-remove"></i></div>`;
+    });
+    document.getElementById('sum-docs').textContent = count + ' file' + (count !== 1 ? 's' : '');
+  }
+
+  const API_URL = 'https://x2k5s6q199.execute-api.us-east-1.amazonaws.com/submitclaim';
+
+  function showToast(msg, success = true) {
+    const t = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    t.style.borderColor = success ? 'var(--green-primary)' : '#f87171';
+    t.querySelector('i').style.color = success ? 'var(--green-primary)' : '#f87171';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 4000);
+  }
+
+  async function submitClaim() {
+    // Collect form data
+    const applicantName = document.getElementById('appName').value.trim();
+    const state = document.getElementById('stateField').value;
+    const village = document.getElementById('villageField').value.trim();
+    const survey = document.getElementById('surveyField').value.trim();
+    const area = document.getElementById('areaField').value.trim();
+
+    // Basic validation
+    if (!applicantName || !state || !village || !survey || !area) {
+      showToast('❌ Please fill in all required fields!', false);
+      return;
+    }
+
+    // Show loading state
+    const btn = document.querySelector('.btn-primary');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+    btn.disabled = true;
+
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          applicantName,
+          state,
+          village,
+          surveyNumber: survey,
+          area,
+          landType:  document.querySelector('select:nth-of-type(2)') ? document.querySelector('#claimForm select:last-of-type').value : '',
+          claimDate: document.querySelector('input[type="date"]').value,
+          notes:     document.querySelector('textarea').value,
+        })
+      });
+
+      const raw = await response.json();
+      const data = typeof raw.body === "string" ? JSON.parse(raw.body) : raw;
+
+      if (response.ok) {
+        const claimId = data.claimId || data.claimid || "submitted";
+        showToast(`✅ Claim ${claimId} submitted successfully!`);
+        document.getElementById('claimForm').reset();
+        updateSummary();
+      } else {
+        showToast('❌ Something went wrong. Please try again.', false);
+      }
+    } catch (err) {
+      showToast('❌ Network error. Please check your connection.', false);
+    } finally {
+      btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Claim';
+      btn.disabled = false;
+    }
+  }
+
+  function saveDraft() { showToast('💾 Draft saved successfully!'); }
+
+  // Drag and drop
+  const zone = document.getElementById('uploadZone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+</script>
+</body>
+</html>
+

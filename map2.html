@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VanDrishti — Interactive Map</title>
+  <link rel="stylesheet" href="shared.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    .map-wrapper { display: flex; flex-direction: column; flex: 1; padding: 20px; gap: 16px; }
+    .map-controls { display: flex; align-items: center; gap: 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 20px; }
+    .map-controls label { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+    .map-controls select { background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 12px; font-size: 13px; color: var(--text-primary); font-family: 'DM Sans', sans-serif; outline: none; cursor: pointer; transition: all 0.2s; min-width: 160px; }
+    .map-controls select:focus { border-color: var(--green-primary); box-shadow: 0 0 0 3px var(--green-glow); }
+    .map-divider { width: 1px; height: 28px; background: var(--border); }
+    .map-controls-spacer { flex: 1; }
+    .map-info-badge { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--green-glow); border: 1px solid var(--border-active); border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--green-primary); }
+    #indiaMap { flex: 1; min-height: 560px; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    #indiaMap:hover { border-color: var(--border-active); }
+  </style>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🌿</div>
+    <span class="logo-text">Van<span>Drishti</span></span>
+  </div>
+  <div class="sidebar-menu">
+    <div class="nav-section-label">Main</div>
+    <ul class="nav-links">
+      <li><a href="dashboard.html"><i class="fas fa-th-large"></i> Dashboard</a></li>
+      <li><a href="map2.html" class="active"><i class="fas fa-map-marked-alt"></i> Interactive Map</a></li>
+      <li><a href="claims.html"><i class="fas fa-file-upload"></i> Submit Claims</a></li>
+      <li><a href="reports.html"><i class="fas fa-chart-bar"></i> Reports</a></li>
+    </ul>
+    <div class="nav-section-label" style="margin-top:16px;">System</div>
+    <ul class="nav-links">
+      <li><a href="settings.html"><i class="fas fa-cog"></i> Settings</a></li>
+    </ul>
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar">S</div>
+      <div class="user-info">
+        <div class="user-name">Saransh</div>
+        <div class="user-role">Field Officer</div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="main-wrapper">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="page-title">Interactive Map</span>
+      <span class="page-subtitle">Explore forest land claims across India</span>
+    </div>
+    <div class="topbar-right">
+      <div class="status-badge"><div class="status-dot"></div> Map Live</div>
+      <div class="topbar-btn"><i class="fas fa-bell"></i><div class="notif-dot"></div></div>
+    </div>
+  </div>
+  <div class="map-wrapper">
+    <div class="map-controls">
+      <label>State</label>
+      <select id="stateSelect">
+        <option value="">— All States —</option>
+        <option value="Odisha">Odisha</option>
+        <option value="Jharkhand">Jharkhand</option>
+        <option value="Telangana">Telangana</option>
+        <option value="Madhya Pradesh">Madhya Pradesh</option>
+        <option value="Tripura">Tripura</option>
+      </select>
+      <div class="map-divider"></div>
+      <label>City</label>
+      <select id="citySelect"><option value="">— Select City —</option></select>
+      <div class="map-controls-spacer"></div>
+      <div class="map-info-badge"><i class="fas fa-map-marker-alt"></i> <span id="locationLabel">India Overview</span></div>
+    </div>
+    <div id="indiaMap"></div>
+  </div>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="map2.js"></script>
+<script>
+  document.getElementById('stateSelect').addEventListener('change', function() { document.getElementById('locationLabel').textContent = this.value || 'India Overview'; });
+  document.getElementById('citySelect').addEventListener('change', function() { if(this.value){ document.getElementById('locationLabel').textContent = this.options[this.selectedIndex].text; } });
+</script>
+</body>
+</html>
